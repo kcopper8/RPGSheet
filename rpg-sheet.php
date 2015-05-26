@@ -56,7 +56,7 @@ if ($post->post_type == "rs_sheet"){
 
 add_action('add_meta_boxes_rs_sheet', 'rs_meta_box_add_function');
 function rs_meta_box_add_function() {
-	wp_enqueue_script('rs_sheet_meta_script', RS_PLUGIN_ROOT_URL . "/scripts/scripts.js", array('jquery'));
+	wp_enqueue_script('rs_sheet_meta_script', RS_PLUGIN_ROOT_URL . "/scripts/scripts.js", array('jquery', 'underscore'));
 	add_meta_box('rs_sheet', '시트', 'rs_add_meta_box', 'rs_sheet');
 
 }

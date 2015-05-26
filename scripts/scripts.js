@@ -1,14 +1,14 @@
-(function($, _s) {
+(function($, _, _s) {
 	// Element Util
+
 
 	function isRepeatingFieldset(el) {
 		return _s.startsWith(el.attr('class'), "repeating_");
 	}
 
-	var ATTR_TITLE_REGEX = /@\{(\S+)\}/;
-
 	function isThisTagAttributeTag($tag) {
-		return $tag.is("[title]") && ATTR_TITLE_REGEX.test($tag.attr('title'));
+		return _s.startsWith($tag.attr('name'), 'attr_');
+		//return $tag.is("[title]") && ATTR_TITLE_REGEX.test($tag.attr('title'));
 	}
 
 
@@ -16,18 +16,18 @@
 
 	var ADD_REPEATING_ITEM_TEMPLATE = function() {
 		return _.template(
-			'<div class="repitem">' + 
+			'<div class="repitem">' +
 			'	<div class="itemcontrol"><button class="btn btn-danger pictos repcontrol_del">#del</button></div>' +
 			'	<%=template %>' +
-        	'</div>');
+			'</div>');
 	};
 
 
 	function addRepeatAttributeItem($templateEl, $containerEl, item) {
 		var appendedRepeatingEl = $(ADD_REPEATING_ITEM_TEMPLATE()({
-				template : $templateEl.html()
-			}))
-		.appendTo($containerEl);
+			template : $templateEl.html()
+		}))
+			.appendTo($containerEl);
 
 		if (!item) {
 			item = {};
@@ -60,7 +60,7 @@
 	}
 
 
-	// end controller 
+	// end controller
 
 	function attachRepeatingContainer(fieldsetEl) {
 		console.log('attachRepeatingContainer', fieldsetEl);
@@ -114,7 +114,7 @@
 			return;
 		}
 
-		
+
 
 		// this 의 innerHTML 로 템플릿을 만든다.
 		// 	템플릿 만들기
@@ -125,25 +125,20 @@
 		attachRepeatingController($repEl, $repeatingContainer);
 
 		/*
-		- add modify 버튼 HTML 만들기
-		- add 버튼 눌렀을 때 동작 등록하기
-		- modify 버튼 눌렀을 때 동작 등록하기
-		*/
-	}
-
-	function prepareRepeatingElements() {
-		$("#rs_sheet fieldset").each(prepareEachRepeatingElement);
+		 - add modify 버튼 HTML 만들기
+		 - add 버튼 눌렀을 때 동작 등록하기
+		 - modify 버튼 눌렀을 때 동작 등록하기
+		 */
 	}
 
 	/*
-	voca 
-		- attribute : 시트에서 의미있는 tag
-	*/
+	 voca
+	 - attribute : 시트에서 의미있는 tag
+	 */
 
 	function parseAttribute($tag) {
-		var attrName = $tag.attr('title');
-		attrName = ATTR_TITLE_REGEX.exec(attrName)[1];
-		attrName.substr(1);
+		var attrName = $tag.attr('name');
+		attrName = attrName.substr("attr_".length);
 
 		if ($tag.is(":checkbox")) {
 			return {
@@ -199,13 +194,13 @@
 	}
 
 
-	function loopSetDataToAttributeTag_repeatingData(value, key) {
+	function loopSetDataToAttributeTag_repeatingData(value, key, rpgSheetElement) {
 		console.log('repeating data set', key, value);
 
 		var groupName = "repeating_" + key;
 
-		var $containerEl = $("#rs_sheet .repcontainer[data-groupname="+groupName+"]");
-		var $templateEl = $("#rs_sheet FIELDSET."+groupName);
+		var $containerEl = $(".repcontainer[data-groupname="+groupName+"]", rpgSheetElement);
+		var $templateEl = $("FIELDSET."+groupName, rpgSheetElement);
 
 		if ($containerEl.length < 1 || $templateEl.length < 1) {
 			console.log('no repeating element');
@@ -217,12 +212,12 @@
 		});
 	}
 
-	function loopSetDataToAttributeTag_normalData(value, key) {
-		var selector = _.template("#rs_sheet [name=attr_<%=name%>]", {
+	function loopSetDataToAttributeTag_normalData(value, key, rpgSheetElement) {
+		var selector = _.template(" [name=attr_<%=name%>]", {
 			name : key
 		});
 
-		var $input = $(selector);
+		var $input = $(selector, rpgSheetElement);
 
 		if (!$input) {
 			return;
@@ -232,59 +227,49 @@
 			$input.val([value]);
 		} else {
 			$input.val(value);
-		}	
-	}
-
-
-	function loopSetDataToAttributeTag(value, key) {
-		if (_.isArray(value)) {
-			loopSetDataToAttributeTag_repeatingData(value, key);
-		} else {
-			loopSetDataToAttributeTag_normalData(value, key);
 		}
 	}
 
-	function formSubmitSupport() {
-		var attrs = {};
-		$rsSheet = $("#rs_sheet");
+	$.fn.rpgSheet = function(rpgSheetData) {
+		this.find("fieldset").each(prepareEachRepeatingElement);
 
-		// normal elements
-		$("INPUT[title],TEXTAREA[title]", $rsSheet).each(function() {
-			loopGetDataAttributeTag.call(this, attrs);
-		});
+		_.each(rpgSheetData, function (value, key) {
+			if (_.isArray(value)) {
+				loopSetDataToAttributeTag_repeatingData(value, key, this);
+			} else {
+				loopSetDataToAttributeTag_normalData(value, key, this);
+			}
+		}, this);
 
+		var $rsSheet = this;
 
-		// loop elements
-		$(".repcontainer", $rsSheet).each(function() {
-			loopGetRepeatingDataAttributes.call(this, attrs);
-		});
+		return {
+			formSubmitSupport : function () {
+				var attrs = {};
 
-		$("INPUT[name=rs_data]").val(JSON.stringify(attrs));
-
-		return true;
-	}
-
-	function setDataToRsForm(data) {
-		console.log('setDataToRsForm', data);
-		_.each(data, loopSetDataToAttributeTag);
-	}
-
-	function initializeRsForm(data) {
-		setDataToRsForm(data);
-		$("#post").submit(formSubmitSupport);
-	}
-
-	$(window).load(function() {
-		prepareRepeatingElements();
-
-		initializeRsForm(window.rsData);
-	});
+				// normal elements
+				$("INPUT,TEXTAREA", $rsSheet).each(function() {
+					loopGetDataAttributeTag.call(this, attrs);
+				});
 
 
+				// loop elements
+				$(".repcontainer", $rsSheet).each(function() {
+					loopGetRepeatingDataAttributes.call(this, attrs);
+				});
 
-	/// 
+				$("INPUT[name=rs_data]").val(JSON.stringify(attrs));
+
+				return true;
+			}
+		};
+	};
+
+
+
 }(
-	jQuery, 
+	jQuery,
+	_,
 	(function() {
 		// utils start
 		function makeString(object) {
@@ -305,4 +290,16 @@
 			}
 		};
 	}())
+));
+(function($, _) {
+	// Element
+	$(window).load(function() {
+		var rpgSheet = $("#rs_sheet").rpgSheet(window.rsData);
+
+		$("#post").submit(_.bind(rpgSheet.formSubmitSupport, rpgSheet));
+	});
+	///
+}(
+	jQuery,
+	_
 ));
