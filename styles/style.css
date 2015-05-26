@@ -1,0 +1,48 @@
+#rs_sheet .sheet-2colrow {
+	clear: both;
+	display: block;
+}
+
+#rs_sheet .sheet-col {
+	display: inline-block;
+	vertical-align: top;
+}
+
+#rs_sheet .sheet-2colrow .sheet-col {
+	width: calc(50% - 20px);
+}
+
+#rs_sheet .sheet-3colrow .sheet-col {
+	width: calc(33% - 21px);
+}
+
+
+#rs_sheet .sheet-break {
+	clear: both;
+	display: block;
+}
+
+#rs_sheet .sheet-row {
+	clear: both;
+	display: block;
+}
+
+
+#rs_sheet input[type=number] {
+	width: 3.5em;
+}
+
+
+#rs_sheet .repitem {
+	position: relative;
+}
+
+#rs_sheet .repitem .itemcontrol {
+	position: absolute;
+	width: 40px;
+	margin-left: calc(100% - 42px);
+}
+
+#rs_sheet .repitem .itemcontrol .btn{
+	float: right;
+}
