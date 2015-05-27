@@ -81,6 +81,7 @@ function rs_common_get_allsheets() {
 function rs_common_get_sheet_data($rs_type) {
 	$sheetJsonFilePath = RS_PLUGIN_SHEETS_PATH . "/$rs_type/sheet.json";
 	$sheet_data = json_decode(file_get_contents($sheetJsonFilePath));
+
 	// return array("html" => "fate.html", "css" => "fate.css");
 	return $sheet_data;
 }
@@ -111,7 +112,7 @@ function rs_save_meta_box($post_id) {
 	// wp_die('www' . ' ' . ($post -> post_type) . ' '. $post_id . ' '. esc_attr($_REQUEST['rs_data']));
 
 	update_post_meta($post_id, RS_META_NAME_SHEET_DATA, esc_attr($_REQUEST[RS_META_NAME_SHEET_DATA]));
-	update_post_meta($post_id, RS_META_NAME_SHEET_TYPE, esc_attr($_REQUEST[RS_META_NAME_SHEET_TYPE]));
+	update_post_meta($post_id, RS_META_NAME_SHEET_TYPE, $_REQUEST[RS_META_NAME_SHEET_TYPE]);
 }
 
 ?>
